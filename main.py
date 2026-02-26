@@ -1,3 +1,8 @@
+"""
+Production-ready Background Removal API using FastAPI and rembg
+Single file implementation - Optimized for Render Free Tier
+"""
+
 import io
 import os
 import logging
@@ -19,8 +24,8 @@ class Settings(BaseSettings):
     VERSION: str = "1.0.0"
     API_V1_STR: str = "/api/v1"
     
-    # File upload settings
-    MAX_FILE_SIZE: int = 10 * 1024 * 1024  # 10MB in bytes
+    # File upload settings - Reduced for free tier
+    MAX_FILE_SIZE: int = 5 * 1024 * 1024  # 5MB for free tier
     ALLOWED_EXTENSIONS: Set[str] = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
     
     # Server settings
@@ -52,8 +57,10 @@ class ImageProcessor:
     def __init__(self):
         """Initialize the image processor with rembg session"""
         try:
-            self.rembg_session = rembg.new_session()
-            logger.info("ImageProcessor initialized with rembg session")
+            # Use CPU-only mode for Render
+            os.environ["REMBG_USE_CPU"] = "1"
+            self.rembg_session = rembg.new_session(model_name="u2net")
+            logger.info("ImageProcessor initialized with rembg session (CPU mode)")
         except Exception as e:
             logger.error(f"Failed to initialize rembg session: {str(e)}")
             raise
@@ -91,7 +98,7 @@ class ImageProcessor:
         """Clean up resources"""
         if self.rembg_session:
             logger.info("Cleaning up rembg session")
-            pass  # Add cleanup if needed
+            pass
 
 # Create global image processor instance
 image_processor = ImageProcessor()
@@ -135,7 +142,7 @@ async def validate_image_file(file: UploadFile) -> None:
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
-    description="Production-ready Background Removal API using FastAPI and rembg",
+    description="Background Removal API using FastAPI and rembg",
     docs_url="/docs",
     redoc_url="/redoc",
 )
@@ -177,12 +184,12 @@ async def health_check():
          summary="Remove background from image",
          description="Upload an image and get back a PNG with background removed")
 async def remove_background(
-    file: UploadFile = File(..., description="Image file to process (jpg, jpeg, png, webp, bmp) - max 10MB")
+    file: UploadFile = File(..., description="Image file to process (jpg, jpeg, png, webp, bmp) - max 5MB")
 ):
     """
     Remove background from uploaded image
     
-    - **file**: Image file (jpg, jpeg, png, webp, bmp) - max 10MB
+    - **file**: Image file (jpg, jpeg, png, webp, bmp) - max 5MB
     - Returns: PNG image with transparent background
     """
     try:
@@ -245,9 +252,10 @@ async def shutdown_event():
 # ==================== MAIN ENTRY POINT ====================
 
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", 8000))  # Get port from environment for Render
+    port = int(os.getenv("PORT", 8000))
     uvicorn.run(
         "main:app",
         host=settings.HOST,
         port=port,
-        reload=seport
+        reload=settings.DEBUG
+    )
