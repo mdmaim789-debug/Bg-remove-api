@@ -2,17 +2,17 @@ services:
   - type: web
     name: background-removal-api
     runtime: python
-    region: oregon  # Choose: oregon, frankfurt, singapore, virginia
-    plan: free  # Free tier is sufficient for testing
-    buildCommand: |
-      apt-get update && apt-get install -y libgl1-mesa-glx libglib2.0-0 && pip install -r requirements.txt
-    startCommand: gunicorn main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT
+    region: oregon
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn main:app --workers 2 --worker-class uvicorn.workers.UvicornWorker --timeout 120 --bind 0.0.0.0:$PORT
     healthCheckPath: /health
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
+      - key: REMBG_USE_CPU
+        value: "1"
       - key: PORT
         value: 8000
       - key: MAX_FILE_SIZE
-        value: 10485760
-    autoDeploy: true  # Automatically deploy on git push
+        value: "5242880"  # 5MB
