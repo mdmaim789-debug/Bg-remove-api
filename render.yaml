@@ -4,15 +4,24 @@ services:
     runtime: python
     region: oregon
     plan: free
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn main:app --workers 2 --worker-class uvicorn.workers.UvicornWorker --timeout 120 --bind 0.0.0.0:$PORT
+    buildCommand: |
+      pip install --upgrade pip setuptools wheel
+      pip install numpy==1.24.3
+      pip install -r requirements.txt
+    startCommand: gunicorn main:app --workers 1 --worker-class uvicorn.workers.UvicornWorker --timeout 180 --bind 0.0.0.0:$PORT
     healthCheckPath: /health
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
       - key: REMBG_USE_CPU
         value: "1"
-      - key: PORT
-        value: 8000
+      - key: NUMPY_EXPERIMENTAL_ARRAY_FUNCTION
+        value: "0"
+      - key: OMP_NUM_THREADS
+        value: "1"
+      - key: OPENBLAS_NUM_THREADS
+        value: "1"
       - key: MAX_FILE_SIZE
-        value: "5242880"  # 5MB
+        value: "3145728"
+      - key: DEBUG
+        value: "false"
