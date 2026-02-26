@@ -1,11 +1,26 @@
+# First install numpy 1.x (CRITICAL)
+numpy==1.24.3
+
+# Web framework
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
 python-multipart==0.0.6
-Pillow==10.1.0
+
+# Image processing
+pillow==10.4.0
 rembg==2.0.56
+
+# Configuration
 pydantic==2.5.0
 pydantic-settings==2.1.0
 python-dotenv==1.0.0
+
+# Server
 gunicorn==21.2.0
+
+# ML dependencies (pinned for compatibility)
 onnxruntime==1.16.3
 opencv-python-headless==4.8.1.78
+
+# Optional: for memory monitoring (install if needed)
+# psutil==5.9.5
